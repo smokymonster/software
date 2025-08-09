@@ -148,9 +148,37 @@ def download_proxy():
 function FindProxyForURL(url, host) {
     // Proxy configuration
     var proxy = "PROXY 127.0.0.1:8080";
-
-    // Send all traffic through the proxy
-    return proxy;
+    
+    // Direct connection for local addresses
+    if (isPlainHostName(host) ||
+        shExpMatch(host, "*.local") ||
+        isInNet(dnsResolve(host), "10.0.0.0", "255.0.0.0") ||
+        isInNet(dnsResolve(host), "172.16.0.0", "255.240.0.0") ||
+        isInNet(dnsResolve(host), "192.168.0.0", "255.255.0.0") ||
+        isInNet(dnsResolve(host), "127.0.0.0", "255.255.255.0")) {
+        return "DIRECT";
+    }
+    
+    // Intercept GraphQL endpoint that contains decrypt key/IV
+    if (dnsDomainIs(host, "dap-mc2-graphql-us-east-1.collegeboard.org") && 
+        shExpMatch(url, "*/graphql")) {
+        return proxy;
+    }
+    
+    // Intercept encrypted download URLs
+    if (dnsDomainIs(host, "dap-testpackages-prod.collegeboard.org") && 
+        shExpMatch(url, "*/encryptedDownload*")) {
+        return proxy;
+    }
+    
+    // Intercept online.json status checks
+    if (dnsDomainIs(host, "bluebook.app.collegeboard.org") && 
+        shExpMatch(url, "*/online.json")) {
+        return proxy;
+    }
+    
+    // Everything else bypasses the proxy
+    return "DIRECT";
 }
 """
 
