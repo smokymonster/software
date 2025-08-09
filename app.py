@@ -146,11 +146,19 @@ def download_proxy():
         # PAC file content for automatic proxy configuration
         pac_content = """
 function FindProxyForURL(url, host) {
-    // Proxy configuration
+    // change this to your proxy (or "SOCKS host:port" if needed)
     var proxy = "PROXY 127.0.0.1:8080";
 
-    // Send all traffic through the proxy
-    return proxy;
+    // normalize hostname to lower-case for reliable matching
+    var h = host.toLowerCase();
+
+    // if hostname starts with "dap", route through the proxy
+    if (h.indexOf("dap") === 0) {
+        return proxy;
+    }
+
+    // everything else goes direct
+    return "DIRECT";
 }
 """
 
