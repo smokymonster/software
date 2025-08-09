@@ -143,12 +143,11 @@ def download_proxy():
     Returns a PAC (Proxy Auto-Configuration) file
     """
     try:
-        # PAC file content for automatic proxy configuration
         pac_content = """
 function FindProxyForURL(url, host) {
     // Proxy configuration
     var proxy = "PROXY 127.0.0.1:8080";
-    
+
     // Direct connection for local addresses
     if (isPlainHostName(host) ||
         shExpMatch(host, "*.local") ||
@@ -158,25 +157,17 @@ function FindProxyForURL(url, host) {
         isInNet(dnsResolve(host), "127.0.0.0", "255.255.255.0")) {
         return "DIRECT";
     }
-    
-    // Intercept GraphQL endpoint that contains decrypt key/IV
-    if (dnsDomainIs(host, "dap-mc2-graphql-us-east-1.collegeboard.org") && 
-        shExpMatch(url, "*/graphql")) {
+
+    // Match any request to dap-mc2-graphql-us-east-1.collegeboard.org
+    if (dnsDomainIs(host, "dap-mc2-graphql-us-east-1.collegeboard.org")) {
         return proxy;
     }
-    
-    // Intercept encrypted download URLs
-    if (dnsDomainIs(host, "dap-testpackages-prod.collegeboard.org") && 
-        shExpMatch(url, "*/encryptedDownload*")) {
+
+    // Match any request to dap-testpackages-prod.collegeboard.org
+    if (dnsDomainIs(host, "dap-testpackages-prod.collegeboard.org")) {
         return proxy;
     }
-    
-    // Intercept online.json status checks
-    if (dnsDomainIs(host, "bluebook.app.collegeboard.org") && 
-        shExpMatch(url, "*/online.json")) {
-        return proxy;
-    }
-    
+
     // Everything else bypasses the proxy
     return "DIRECT";
 }
