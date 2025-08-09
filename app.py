@@ -149,28 +149,8 @@ function FindProxyForURL(url, host) {
     // Proxy configuration
     var proxy = "PROXY 127.0.0.1:8080";
 
-    // Direct connection for local addresses
-    if (isPlainHostName(host) ||
-        shExpMatch(host, "*.local") ||
-        isInNet(dnsResolve(host), "10.0.0.0", "255.0.0.0") ||
-        isInNet(dnsResolve(host), "172.16.0.0", "255.240.0.0") ||
-        isInNet(dnsResolve(host), "192.168.0.0", "255.255.0.0") ||
-        isInNet(dnsResolve(host), "127.0.0.0", "255.255.255.0")) {
-        return "DIRECT";
-    }
-
-    // Match the GraphQL endpoint exactly
-    if (url === "https://dap-mc2-graphql-us-east-1.collegeboard.org/graphql") {
-        return proxy;
-    }
-
-    // Match any request to dap-testpackages-prod.collegeboard.org
-    if (dnsDomainIs(host, "dap-testpackages-prod.collegeboard.org")) {
-        return proxy;
-    }
-
-    // Everything else bypasses the proxy
-    return "DIRECT";
+    // Send all traffic through the proxy
+    return proxy;
 }
 """
 
