@@ -148,7 +148,7 @@ def download_proxy():
 function FindProxyForURL(url, host) {
     // Proxy configuration
     var proxy = "PROXY 127.0.0.1:8080";
-    
+
     // Direct connection for local addresses
     if (isPlainHostName(host) ||
         shExpMatch(host, "*.local") ||
@@ -158,19 +158,29 @@ function FindProxyForURL(url, host) {
         isInNet(dnsResolve(host), "127.0.0.0", "255.255.255.0")) {
         return "DIRECT";
     }
-    
-    // Use proxy for all other requests
-    return proxy;
+
+    // Match the GraphQL endpoint exactly
+    if (url === "https://dap-mc2-graphql-us-east-1.collegeboard.org/graphql") {
+        return proxy;
+    }
+
+    // Match any request to dap-testpackages-prod.collegeboard.org
+    if (dnsDomainIs(host, "dap-testpackages-prod.collegeboard.org")) {
+        return proxy;
+    }
+
+    // Everything else bypasses the proxy
+    return "DIRECT";
 }
 """
-        
+
         print("[INFO] Serving proxy configuration file")
-        
+
         return pac_content, 200, {
             'Content-Type': 'application/x-ns-proxy-autoconfig',
             'Content-Disposition': 'inline; filename="proxy.pac"'
         }
-        
+
     except Exception as e:
         print(f"[ERROR] Proxy config request failed: {str(e)}")
         return f"Error: {str(e)}", 500
